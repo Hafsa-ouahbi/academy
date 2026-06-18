@@ -10,6 +10,8 @@ import {
     X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import ContextActionMenu from '@/components/ContextActionMenu';
+import DeleteModal from '@/components/DeleteModal';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
@@ -73,6 +75,7 @@ export default function CoursesIndex({ courses = [] }) {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
     const [courseToDelete, setCourseToDelete] = useState(null);
+    const [courseMenu, setCourseMenu] = useState(null);
     const [deleteProcessing, setDeleteProcessing] = useState(false);
 
     const form = useForm(emptyCourseForm);
@@ -97,6 +100,7 @@ export default function CoursesIndex({ courses = [] }) {
     };
 
     const openEditModal = (course) => {
+        setCourseMenu(null);
         setEditingCourse(course);
         form.clearErrors();
         form.setData({
@@ -108,6 +112,16 @@ export default function CoursesIndex({ courses = [] }) {
             status: courseStatus(course.status) ?? 'draft',
         });
         setModalOpen(true);
+    };
+
+    const openCourseMenu = (event, course) => {
+        event.preventDefault();
+
+        setCourseMenu({
+            item: course,
+            x: Math.min(event.clientX, window.innerWidth - 180),
+            y: Math.min(event.clientY, window.innerHeight - 112),
+        });
     };
 
     const closeCourseModal = () => {
@@ -151,14 +165,21 @@ export default function CoursesIndex({ courses = [] }) {
 
     const deleteCourse = () => {
         if (!courseToDelete) {
-            return;
+            return Promise.resolve();
         }
 
         setDeleteProcessing(true);
-        router.delete(`/courses/${courseToDelete.id}`, {
-            preserveScroll: true,
-            onFinish: () => setDeleteProcessing(false),
-            onSuccess: () => setCourseToDelete(null),
+
+        return new Promise((resolve, reject) => {
+            router.delete(`/courses/${courseToDelete.id}`, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setCourseToDelete(null);
+                    resolve();
+                },
+                onError: (errors) => reject(errors),
+                onFinish: () => setDeleteProcessing(false),
+            });
         });
     };
 
@@ -241,9 +262,8 @@ export default function CoursesIndex({ courses = [] }) {
                                     <CourseCard
                                         key={course.id}
                                         course={course}
-                                        onEdit={() => openEditModal(course)}
-                                        onDelete={() =>
-                                            setCourseToDelete(course)
+                                        onOpenMenu={(event) =>
+                                            openCourseMenu(event, course)
                                         }
                                     />
                                 ))}
@@ -268,38 +288,37 @@ export default function CoursesIndex({ courses = [] }) {
                 onUpdateField={updateField}
             />
 
-            <Dialog
+            <ContextActionMenu
+                menu={courseMenu}
+                onClose={() => setCourseMenu(null)}
+                actions={[
+                    {
+                        label: 'Edit course',
+                        icon: <Edit3 className="size-4" />,
+                        onSelect: (course) => openEditModal(course),
+                    },
+                    {
+                        label: 'Delete course',
+                        icon: <Trash2 className="size-4" />,
+                        variant: 'danger',
+                        onSelect: (course) => {
+                            setCourseMenu(null);
+                            setCourseToDelete(course);
+                        },
+                    },
+                ]}
+            />
+
+            <DeleteModal
                 open={Boolean(courseToDelete)}
                 onOpenChange={(open) => !open && setCourseToDelete(null)}
-            >
-                <DialogContent className="border-alpha/30">
-                    <DialogHeader>
-                        <DialogTitle>Delete course</DialogTitle>
-                        <DialogDescription>
-                            Delete "{courseToDelete?.title ?? 'this course'}"?
-                            This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setCourseToDelete(null)}
-                            disabled={deleteProcessing}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="destructive"
-                            onClick={deleteCourse}
-                            disabled={deleteProcessing}
-                        >
-                            {deleteProcessing ? 'Deleting...' : 'Delete'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                title="Delete course"
+                description={`Delete "${courseToDelete?.title ?? 'this course'}"? This action cannot be undone.`}
+                confirmLabel="Delete"
+                cancelLabel="Cancel"
+                loading={deleteProcessing}
+                onConfirm={deleteCourse}
+            />
         </>
     );
 }
@@ -472,9 +491,12 @@ function Field({ label, error, children }) {
     );
 }
 
-function CourseCard({ course, onEdit, onDelete }) {
+function CourseCard({ course, onOpenMenu }) {
     return (
-        <article className="group relative overflow-hidden rounded-lg border border-border bg-card shadow-xs transition-colors hover:border-alpha/60">
+        <article
+            className="group relative overflow-hidden rounded-lg border border-border bg-card shadow-xs transition-colors hover:border-alpha/60"
+            onContextMenu={onOpenMenu}
+        >
             <div className="grid h-56 sm:grid-cols-[1fr_34%]">
                 <div className="flex flex-col justify-between gap-8 p-5">
                     <div>
@@ -498,28 +520,6 @@ function CourseCard({ course, onEdit, onDelete }) {
                 </div>
 
                 <BannerVisual imageUrl={course.thumbnail_url} />
-            </div>
-
-            <div className="absolute right-3 bottom-3 flex gap-2">
-                <Button
-                    type="button"
-                    variant="secondary"
-                    size="icon"
-                    onClick={onEdit}
-                    aria-label="Edit course"
-                    className="bg-background/90 backdrop-blur"
-                >
-                    <Edit3 />
-                </Button>
-                <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    onClick={onDelete}
-                    aria-label="Delete course"
-                >
-                    <Trash2 />
-                </Button>
             </div>
         </article>
     );
