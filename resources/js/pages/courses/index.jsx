@@ -200,7 +200,7 @@ export default function CoursesIndex({ courses = [] }) {
         >
             <Head title="Courses" />
 
-            <div className="min-h-screen bg-dark p-4 md:p-6">
+            <div className="min-h-screen bg-light dark:bg-dark p-4 md:p-6">
                 <CoursesHeader stats={stats} onCreate={openCreateModal} />
                 <Banner
                     illustration={illustration}
