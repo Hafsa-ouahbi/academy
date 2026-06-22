@@ -13,6 +13,8 @@ createInertiaApp({
     switch (true) {
       case name.startsWith('welcome'):
         return null;
+      case name.startsWith('courses/'):
+        return null;
       case name.startsWith('settings/'):
         return [AppLayout, SettingsLayout];
       default:
