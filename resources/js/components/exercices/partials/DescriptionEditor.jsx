@@ -1,6 +1,5 @@
 import { FileCode2, Type } from 'lucide-react';
 import { TransText } from '@/components/TransText';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import MarkdownEditor from './MarkdownEditor';
 import TipTapEditor from './TipTapEditor';
@@ -20,33 +19,40 @@ export default function DescriptionEditor({
 
     return (
         <div className="space-y-3">
-            <ToggleGroup
-                type="single"
-                value={format}
-                onValueChange={(value) =>
-                    value && onChange('description_format', value)
-                }
-                className="w-full justify-start rounded-lg border border-beta/10 bg-beta/5 p-1 dark:border-light/10"
-            >
-                <ToggleGroupItem
-                    value={DESCRIPTION_FORMATS.MARKDOWN}
-                    className={cn(
-                        'flex flex-1 items-center justify-center gap-2 data-[state=on]:bg-alpha data-[state=on]:text-beta',
-                    )}
-                >
-                    <FileCode2 className="size-4" />
-                    <TransText en="Markdown" fr="Markdown" ar="Markdown" />
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                    value={DESCRIPTION_FORMATS.TIPTAP}
-                    className={cn(
-                        'flex flex-1 items-center justify-center gap-2 data-[state=on]:bg-alpha data-[state=on]:text-beta',
-                    )}
-                >
-                    <Type className="size-4" />
-                    <TransText en="TipTap" fr="TipTap" ar="TipTap" />
-                </ToggleGroupItem>
-            </ToggleGroup>
+            {/* Tab bar */}
+            <div className="flex rounded-lg border border-beta/10 bg-beta/5 p-1 dark:border-light/10 dark:bg-light/5">
+                {[
+                    {
+                        value: DESCRIPTION_FORMATS.MARKDOWN,
+                        icon: FileCode2,
+                        label: <TransText en="Markdown" fr="Markdown" ar="Markdown" />,
+                    },
+                    {
+                        value: DESCRIPTION_FORMATS.TIPTAP,
+                        icon: Type,
+                        label: <TransText en="Rich text" fr="Rich text" ar="Rich text" />,
+                    },
+                ].map((tab) => {
+                    const Icon = tab.icon;
+                    const active = format === tab.value;
+                    return (
+                        <button
+                            key={tab.value}
+                            type="button"
+                            onClick={() => onChange('description_format', tab.value)}
+                        className={cn(
+                                    'flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-150',
+                                    active
+                                        ? 'bg-dark text-light shadow-sm dark:bg-alpha dark:text-beta'
+                                        : 'text-beta/50 hover:text-beta dark:text-light/50 dark:hover:text-light',
+                                )}
+                        >
+                            <Icon className="size-3.5" />
+                            {tab.label}
+                        </button>
+                    );
+                })}
+            </div>
 
             {format === DESCRIPTION_FORMATS.MARKDOWN ? (
                 <MarkdownEditor

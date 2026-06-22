@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, Save } from 'lucide-react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    ClipboardList,
+    Plus,
+    Save,
+    Settings2,
+    Sparkles,
+} from 'lucide-react';
 import { TransText } from '@/components/TransText';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
-    DialogHeader,
-    DialogTitle,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useExerciseAutosave } from '../hooks/useExerciseAutosave';
 import { DESCRIPTION_FORMATS } from './DescriptionEditor';
@@ -34,28 +40,40 @@ export const EMPTY_EXERCISE_FORM = {
     rulesFileName: '',
 };
 
-const STEP_TITLES = {
-    1: (
-        <TransText
-            en="Write the exercise title and description."
-            fr="Write the exercise title and description."
-            ar="Write the exercise title and description."
-        />
-    ),
-    2: (
-        <TransText
-            en="Configure difficulty, rewards, and grading rules."
-            fr="Configure difficulty, rewards, and grading rules."
-            ar="Configure difficulty, rewards, and grading rules."
-        />
-    ),
-    3: (
-        <TransText
-            en="Review everything before creating the exercise."
-            fr="Review everything before creating the exercise."
-            ar="Review everything before creating the exercise."
-        />
-    ),
+const STEP_META = {
+    1: {
+        icon: ClipboardList,
+        title: <TransText en="Content" fr="Content" ar="Content" />,
+        hint: (
+            <TransText
+                en="Write the exercise title and description."
+                fr="Write the exercise title and description."
+                ar="Write the exercise title and description."
+            />
+        ),
+    },
+    2: {
+        icon: Settings2,
+        title: <TransText en="Settings & rules" fr="Settings & rules" ar="Settings & rules" />,
+        hint: (
+            <TransText
+                en="Configure difficulty, XP rewards, and grading rules."
+                fr="Configure difficulty, XP rewards, and grading rules."
+                ar="Configure difficulty, XP rewards, and grading rules."
+            />
+        ),
+    },
+    3: {
+        icon: Sparkles,
+        title: <TransText en="Review" fr="Review" ar="Review" />,
+        hint: (
+            <TransText
+                en="Review everything before publishing the exercise."
+                fr="Review everything before publishing the exercise."
+                ar="Review everything before publishing the exercise."
+            />
+        ),
+    },
 };
 
 function hasDescriptionContent(data) {
@@ -186,92 +204,115 @@ export default function ExerciseModal({
         handleOpenChange(false);
     };
 
+    const StepIcon = STEP_META[step].icon;
+
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent
                 className={cn(
-                    'max-h-[90vh] overflow-y-auto',
+                    'flex max-h-[92vh] flex-col gap-0 overflow-hidden p-0',
                     step === 1 ? 'sm:max-w-5xl' : 'sm:max-w-2xl',
                 )}
             >
-                <DialogHeader className="space-y-4">
-                    <div className="space-y-1">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-alpha">
-                            <TransText
-                                en={`Step ${step} of ${TOTAL_STEPS}`}
-                                fr={`Step ${step} of ${TOTAL_STEPS}`}
-                                ar={`Step ${step} of ${TOTAL_STEPS}`}
-                            />
-                        </p>
-                        <DialogTitle>
-                            {isEditing ? (
+                {/* ── Header ── */}
+                <div className="space-y-5 border-b border-beta/10 px-6 pb-5 pt-6 dark:border-beta">
+                    {/* title row */}
+                    <div className="flex items-start gap-3">
+                        <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-beta/10 text-beta dark:bg-alpha/10 dark:text-alpha">
+                            <StepIcon className="size-4" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                            <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-widest text-beta dark:text-alpha">
                                 <TransText
-                                    en="Edit exercise"
-                                    fr="Edit exercise"
-                                    ar="Edit exercise"
+                                    en={`Step ${step} of ${TOTAL_STEPS}`}
+                                    fr={`Step ${step} of ${TOTAL_STEPS}`}
+                                    ar={`Step ${step} of ${TOTAL_STEPS}`}
                                 />
-                            ) : (
-                                <TransText
-                                    en="Create exercise"
-                                    fr="Create exercise"
-                                    ar="Create exercise"
-                                />
-                            )}
-                        </DialogTitle>
-                        <DialogDescription>
-                            {STEP_TITLES[step]}
-                        </DialogDescription>
+                            </p>
+                            <h2 className="text-lg font-semibold leading-tight text-beta dark:text-light">
+                                {isEditing ? (
+                                    <TransText
+                                        en="Edit exercise"
+                                        fr="Edit exercise"
+                                        ar="Edit exercise"
+                                    />
+                                ) : (
+                                    <TransText
+                                        en="Create exercise"
+                                        fr="Create exercise"
+                                        ar="Create exercise"
+                                    />
+                                )}
+                                {' — '}
+                                <span className="font-normal text-beta/60 dark:text-light/60">
+                                    {STEP_META[step].title}
+                                </span>
+                            </h2>
+                            <p className="mt-0.5 text-sm text-beta/50 dark:text-light/50">
+                                {STEP_META[step].hint}
+                            </p>
+                        </div>
                     </div>
+
+                    {/* step indicator */}
                     <ExerciseStepIndicator currentStep={step} />
-                </DialogHeader>
+                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={step}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            {step === 1 && (
-                                <StepContent
-                                    data={data}
-                                    errors={errors}
-                                    onChange={updateField}
-                                    autosaveStatus={autosaveStatus}
-                                    coachType={coachType}
-                                />
-                            )}
-                            {step === 2 && (
-                                <StepSettings
-                                    data={data}
-                                    errors={errors}
-                                    onChange={updateField}
-                                />
-                            )}
-                            {step === 3 && <StepReview data={data} />}
-                        </motion.div>
-                    </AnimatePresence>
+                {/* ── Scrollable body ── */}
+                <div className="custom-scrollbar flex-1 overflow-y-auto px-6 py-5">
+                    <form id="exercise-form" onSubmit={handleSubmit}>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={step}
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -12 }}
+                                transition={{ duration: 0.18, ease: 'easeOut' }}
+                            >
+                                {step === 1 && (
+                                    <StepContent
+                                        data={data}
+                                        errors={errors}
+                                        onChange={updateField}
+                                        autosaveStatus={autosaveStatus}
+                                        coachType={coachType}
+                                    />
+                                )}
+                                {step === 2 && (
+                                    <StepSettings
+                                        data={data}
+                                        errors={errors}
+                                        onChange={updateField}
+                                    />
+                                )}
+                                {step === 3 && <StepReview data={data} />}
+                            </motion.div>
+                        </AnimatePresence>
+                    </form>
+                </div>
 
-                    <DialogFooter className="gap-2 sm:justify-between">
+                {/* ── Sticky footer ── */}
+                <div className="shrink-0 border-t border-beta/10 dark:border-beta">
+                    <DialogFooter className="flex items-center justify-between gap-2 px-6 py-4 sm:justify-between">
                         <div>
                             {step > 1 && (
                                 <Button
                                     type="button"
                                     variant="outline"
+                                    className="gap-1.5 border-beta/20 text-beta/70 hover:border-beta/40 hover:text-beta dark:border-light/20 dark:text-light/70 dark:hover:border-light/40 dark:hover:text-light"
                                     onClick={goBack}
                                 >
-                                    <ChevronLeft />
+                                    <ChevronLeft className="size-4" />
                                     <TransText en="Back" fr="Back" ar="Back" />
                                 </Button>
                             )}
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2">
                             <Button
                                 type="button"
                                 variant="outline"
+                                className="border-beta/20 text-beta/70 dark:border-light/20 dark:text-light/70"
                                 onClick={() => handleOpenChange(false)}
                             >
                                 <TransText en="Cancel" fr="Cancel" ar="Cancel" />
@@ -280,15 +321,23 @@ export default function ExerciseModal({
                             {step < TOTAL_STEPS ? (
                                 <Button
                                     type="button"
-                                    className="bg-alpha"
+                                    className="gap-1.5 bg-dark text-light hover:bg-dark/85 dark:bg-alpha dark:text-beta dark:hover:bg-alpha/85"
                                     onClick={goNext}
                                 >
                                     <TransText en="Next" fr="Next" ar="Next" />
-                                    <ChevronRight />
+                                    <ChevronRight className="size-4" />
                                 </Button>
                             ) : (
-                                <Button type="submit" className="bg-alpha">
-                                    {isEditing ? <Save /> : <Plus />}
+                                <Button
+                                    type="submit"
+                                    form="exercise-form"
+                                    className="gap-1.5 bg-dark text-light hover:bg-dark/85 dark:bg-alpha dark:text-beta dark:hover:bg-alpha/85"
+                                >
+                                    {isEditing ? (
+                                        <Save className="size-4" />
+                                    ) : (
+                                        <Plus className="size-4" />
+                                    )}
                                     {isEditing ? (
                                         <TransText
                                             en="Save changes"
@@ -306,7 +355,7 @@ export default function ExerciseModal({
                             )}
                         </div>
                     </DialogFooter>
-                </form>
+                </div>
             </DialogContent>
         </Dialog>
     );
