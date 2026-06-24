@@ -27,9 +27,8 @@ Route::middleware('auth')->get('/e', function () {
     return redirect('/dashboard');
 });
 
-<<<<<<< Updated upstream
 require __DIR__."/management.php";
-=======
+
 Route::middleware('auth')->get('/concept', function () {
     return Inertia::render('Concept');
 });
@@ -37,5 +36,4 @@ Route::middleware('auth')->get('/concept', function () {
 
 
 
->>>>>>> Stashed changes
 require __DIR__.'/settings.php';
