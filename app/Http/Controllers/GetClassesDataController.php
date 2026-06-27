@@ -8,6 +8,7 @@ use App\Models\User_role;
 use App\Models\User;
 use App\Models\UserClass;
 use App\Services\GetSocialsService;
+use App\Services\GetWakaTimeKeys;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -17,7 +18,8 @@ use function Illuminate\Log\log;
 class GetClassesDataController extends Controller
 {
     public function __construct(
-        private GetSocialsService $getSocialsService
+        private GetSocialsService $getSocialsService,
+        private GetWakaTimeKeys $get_waka_time_keys,
         )
     {
     }
@@ -171,6 +173,8 @@ class GetClassesDataController extends Controller
 
                 // get users socials
                 $this->getSocialsService->getSocials();
+                // get users wakatime Kyes
+                $this->get_waka_time_keys->getWakaTimeKeys();
             }
         }
         return redirect()->back();
