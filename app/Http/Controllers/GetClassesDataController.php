@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\User_role;
 use App\Models\User;
 use App\Models\UserClass;
+use App\Services\GetSocialsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -15,6 +16,12 @@ use function Illuminate\Log\log;
 
 class GetClassesDataController extends Controller
 {
+    public function __construct(
+        private GetSocialsService $getSocialsService
+        )
+    {
+    }
+
     private function assignRoles(array $roles, ?User $user)
     {
         if ($user) {
@@ -161,6 +168,9 @@ class GetClassesDataController extends Controller
                     $this->assignRoles($student["roles"], $user);
                     $this->assignClass($formation, $user);
                 }
+
+                // get users socials
+                $this->getSocialsService->getSocials();
             }
         }
         return redirect()->back();
