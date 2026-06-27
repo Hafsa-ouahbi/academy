@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('waka_times', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("user_id")->constrained();
+            $table->foreignId("user_id")->constrained()->unique();
             $table->string("wakatime_key")->unique();
             $table->timestamps();
         });

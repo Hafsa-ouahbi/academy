@@ -38,6 +38,7 @@ class GetSocialsService
                     ]);
                 } else {
                     $tmpSocial->update([
+                        "user_id" => $user_id,
                         "central_social_id" => $social["central_social_id"],
                         "central_user_id" => $social["central_user_id"],
                         "title" => $social["title"],

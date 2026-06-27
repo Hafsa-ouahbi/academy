@@ -20,9 +20,7 @@ class GetClassesDataController extends Controller
     public function __construct(
         private GetSocialsService $getSocialsService,
         private GetWakaTimeKeys $get_waka_time_keys,
-        )
-    {
-    }
+    ) {}
 
     private function assignRoles(array $roles, ?User $user)
     {
@@ -87,7 +85,7 @@ class GetClassesDataController extends Controller
                     $formation = Classes::create(
                         [
                             "central_id" => $class["central_id"],
-                            "name" => $class["type"] ." ". $class["class"] ?? 1.  . " promo " . $class["promo"],
+                            "name" => $class["type"] . " " . $class["class"] ?? 1.  . " promo " . $class["promo"],
                             "promo" => $class["promo"],
                             "type" => $class["type"],
                             "class" => $class["class"] ?? 1,
@@ -137,7 +135,7 @@ class GetClassesDataController extends Controller
                     $this->assignRoles($coach["roles"], $user);
                     $this->assignClass($formation, $user, true);
                 }
-                
+
                 // create or update the students
                 foreach ($class["users"] ?? [] as $student) {
                     $user = User::where("central_id", $student["central_id"])->first();
@@ -170,12 +168,11 @@ class GetClassesDataController extends Controller
                     $this->assignRoles($student["roles"], $user);
                     $this->assignClass($formation, $user);
                 }
-
-                // get users socials
-                $this->getSocialsService->getSocials();
-                // get users wakatime Kyes
-                $this->get_waka_time_keys->getWakaTimeKeys();
             }
+            // get users socials
+            $this->getSocialsService->getSocials();
+            // get users wakatime Kyes
+            $this->get_waka_time_keys->getWakaTimeKeys();
         }
         return redirect()->back();
     }
