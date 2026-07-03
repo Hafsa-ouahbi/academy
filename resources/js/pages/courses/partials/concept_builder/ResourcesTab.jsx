@@ -28,8 +28,8 @@ export default function ResourcesTab({ topic, onUpdateTopic }) {
                 type === 'pdf'
                     ? 'PDF file'
                     : type === 'image'
-                      ? 'Image file'
-                      : 'External link',
+                    ? 'Image file'
+                    : 'External link',
         };
 
         onUpdateTopic({

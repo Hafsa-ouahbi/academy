@@ -1,35 +1,39 @@
 import React, { useState } from 'react';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 
-import ConceptTopbar from './partials/ConceptTopbar';
-import CourseStructureSidebar from './partials/CourseStructureSidebar';
-import TopicWorkspace from './partials/TopicWorkspace';
+import ConceptTopbar from '../courses/partials/concept_builder/ConceptTopbar';
+import CourseStructureSidebar from '../courses/partials/concept_builder/CourseStructureSidebar';
+import TopicWorkspace from '../courses/partials/concept_builder/TopicWorkspace';
 
 export default function Concept() {
     const {
         concept: serverConcept,
         topics: serverTopics = [],
+        course_id: fallbackCourseId = null,
     } = usePage().props;
 
-    const concept = serverConcept || {
+    const [concept] = useState(serverConcept || {
         id: null,
+        course_id: fallbackCourseId,
         title: 'New Concept',
         description: '',
-    };
+    });
 
     const [topics, setTopics] = useState(() =>
         serverTopics.map((topic) => ({
             id: topic.id,
             title: topic.title || '',
             description: topic.description || '',
-            theory: topic.lessons?.[0]?.content || '',
-            videoUrl: topic.lessons?.[0]?.content_url || '',
+            order_index: topic.order_index,
+            theory: topic.theory ?? topic.lessons?.[0]?.content ?? '',
+            videoUrl: topic.videoUrl ?? topic.lessons?.[0]?.content_url ?? '',
             videoFile: null,
-            resources: [],
-            difficulty: 'easy',
-            status: 'draft',
-            hasQuiz: false,
-            hasExercise: false,
+            resources: topic.resources || [],
+            duration_minutes: topic.duration_minutes ?? null,
+            difficulty: topic.difficulty || 'easy',
+            status: topic.status || 'draft',
+            hasQuiz: Boolean(topic.hasQuiz),
+            hasExercise: Boolean(topic.hasExercise),
         }))
     );
 
@@ -49,10 +53,12 @@ export default function Concept() {
             id: newId,
             title: '',
             description: '',
+            order_index: topics.length + 1,
             theory: '',
             videoUrl: '',
             videoFile: null,
             resources: [],
+            duration_minutes: null,
             difficulty: 'easy',
             status: 'draft',
             hasQuiz: false,
@@ -73,9 +79,38 @@ export default function Concept() {
         );
     };
 
+    const handleSave = () => {
+        const payload = {
+            course_id: concept.course_id ?? fallbackCourseId, // TODO: replace with course selector when the UI supports choosing a course.
+            title: concept.title || 'New Concept',
+            description: concept.description || '',
+            topics: topics.map((topic, index) => ({
+                id: topic.id,
+                title: topic.title || '',
+                description: topic.description || '',
+                order_index: index + 1,
+                theory: topic.theory || '',
+                videoUrl: topic.videoUrl || '',
+                duration_minutes: topic.duration_minutes ?? null,
+                difficulty: topic.difficulty || 'easy',
+                status: topic.status || 'draft',
+                resources: topic.resources || [],
+                hasQuiz: Boolean(topic.hasQuiz),
+                hasExercise: Boolean(topic.hasExercise),
+            })),
+        };
+
+        if (concept.id) {
+            router.put(`/concept/${concept.id}`, payload);
+            return;
+        }
+
+        router.post('/concept', payload);
+    };
+
     return (
         <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
-            <ConceptTopbar concept={concept} />
+            <ConceptTopbar concept={concept} onSave={handleSave} />
 
             <div className="flex flex-1 overflow-hidden">
                 <CourseStructureSidebar
