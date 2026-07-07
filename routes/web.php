@@ -14,7 +14,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 Route::get("/wakatime/{user}", [WakaTimeController::class, "show"]);
-
 require __DIR__."/admin/management.php";
 require __DIR__."/admin/classes.php";
 require __DIR__."/admin/courses.php";

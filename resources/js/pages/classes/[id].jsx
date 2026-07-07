@@ -1,6 +1,6 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
-import ClassDetails from './partials/ClassDetails';
+import Tabs from './partials/Tabs';
 import AppLayout from '@/layouts/app-layout';
 
 export default function ClasseDetails({ courses = [] , data }) {
@@ -19,7 +19,7 @@ export default function ClasseDetails({ courses = [] , data }) {
 
             {/* //^^ chabab  import your component here tawa7d maycodi hna  khdmo dakchi  fl partials then  importiwh   */}
 
- <ClassDetails students={data.students}  coach={data.coach} />
+ <Tabs students={data.students}  coach={data.coach} />
         </AppLayout>
     );
 }
